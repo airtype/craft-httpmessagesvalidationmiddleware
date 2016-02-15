@@ -4,7 +4,7 @@ namespace HttpMessagesValidationMiddleware\Middleware;
 
 use HttpMessages\Http\CraftRequest as Request;
 use HttpMessages\Http\CraftResponse as Response;
-use Respect\Validation\Validator as v;
+use Respect\Validation\Validator;
 use Respect\Validation\Exceptions\NestedValidationException;
 use HttpMessages\Exceptions\HttpMessagesException;
 
@@ -39,47 +39,111 @@ class ValidationMiddleware
         return $response;
     }
 
+    /**
+     * Get Validator
+     *
+     * @param array $config Config
+     *
+     * @return Validator Validator
+     */
     private function getValidator(array $config)
     {
-        $validator = new v;
+        $validator = new Validator;
 
-        foreach ($config as $input => $rules) {
-            $rules = explode('|', $rules);
+        $validator = $this->addRulesFromConfig($validator, $config);
 
-            foreach ($rules as $rule) {
-                $optional = false;
+        return $validator;
+    }
 
-                if ($this->isOptional($rule)) {
-                    $rule = substr($rule, 1);
+    /**
+     * Add Rules From Config
+     *
+     * @param Validator $validator Validator
+     * @param array     $config    Config
+     */
+    private function addRulesFromConfig(Validator $validator, array $config)
+    {
+        foreach ($config as $key => $rules) {
+            if (is_array($rules)) {
+                $validator = $this->addRulesFromConfig($validator, $rules);
 
-                    $optional = true;
-                }
-
-                if ($arguments = $this->getArguments($rule, $optional)) {
-                    if ($optional) {
-                        $validator->key($input, call_user_func_array('\\Respect\\Validation\\Validator::' . $arguments['rule'], $arguments['arguments']), false);
-                    } else {
-                        $validator->key($input, call_user_func_array('\\Respect\\Validation\\Validator::' . $arguments['rule'], $arguments['arguments']));
-                    }
-                } else {
-                    if ($optional) {
-                        $validator->key($input, v::$rule(), false);
-                    } else {
-                        $validator->key($input, v::$rule());
-                    }
-                }
+                continue;
             }
+
+            $validator = $this->processRules($validator, $key, $rules);
         }
 
         return $validator;
     }
 
-    private function isOptional($rule)
+    /**
+     * Process Rules
+     *
+     * @param Validator $validator Validator
+     * @param string    $key       Key
+     * @param string    $rules     Rules
+     *
+     * @return Validator
+     */
+    private function processRules(Validator $validator, $key, $rules)
     {
-        return ($rule[0] === '?');
+        $rules = explode('|', $rules);
+
+        foreach ($rules as $rule) {
+            $validator = $this->processRule($validator, $key, $rule);
+        }
+
+        return $validator;
     }
 
-    private function getArguments($rule)
+    /**
+     * Process Rule
+     *
+     * @param Validator $validator Validator
+     * @param string    $key       Key
+     * @param rule      $rule      Rule
+     *
+     * @return Validator
+     */
+    private function processRule(Validator $validator, $key, $rule)
+    {
+        $required = true;
+
+        if (!$this->isRuleRequired($rule)) {
+            $rule = substr($rule, 1);
+
+            $required = false;
+        }
+
+        if ($rule_arguments = $this->getRuleArguments($rule)) {
+            $class = '\\Respect\\Validation\\Validator::' . $rule_arguments['rule'];
+
+            return $validator->key($key, call_user_func_array($class, $rule_arguments['arguments']), $required);
+        }
+
+        return $validator->key($key, Validator::$rule(), $required);
+    }
+
+    /**
+     * Is Rule Required
+     *
+     * @param string $rule Rule
+     *
+     * @return boolean
+     */
+    private function isRuleRequired($rule)
+    {
+        return ($rule[0] !== '?');
+    }
+
+    /**
+     * Get Rule Arguments
+     *
+     * @param string $rule Rule
+     *
+     * @return array Rule Arguments
+     */
+    private function getRuleArguments($rule)
     {
         $regex = '#(.*)\((([^()]+|(?R))*)\)#';
 
