@@ -25,7 +25,7 @@ class ValidationMiddleware
 
             $validator->assert($input);
         } catch(NestedValidationException $validation_exception) {
-            $exception = new HttpMessagesException('Validation has failed.');
+            $exception = new HttpMessagesException('Whoops, looks like something is missing!');
 
             $exception->setErrors($validation_exception->getMessages());
 
