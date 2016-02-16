@@ -25,7 +25,7 @@ class ValidationMiddleware
 
             $validator->assert($input);
         } catch(NestedValidationException $validation_exception) {
-            $exception = new HttpMessagesException('Whoops, looks like something is missing!');
+            $exception = new HttpMessagesException('Validation error.');
 
             $exception->setErrors($validation_exception->getMessages());
 
@@ -64,12 +64,6 @@ class ValidationMiddleware
     private function addRulesFromConfig(Validator $validator, array $config)
     {
         foreach ($config as $key => $rules) {
-            if (is_array($rules)) {
-                $validator = $this->addRulesFromConfig($validator, $rules);
-
-                continue;
-            }
-
             $validator = $this->processRules($validator, $key, $rules);
         }
 
@@ -118,10 +112,10 @@ class ValidationMiddleware
         if ($rule_arguments = $this->getRuleArguments($rule)) {
             $class = '\\Respect\\Validation\\Validator::' . $rule_arguments['rule'];
 
-            return $validator->key($key, call_user_func_array($class, $rule_arguments['arguments']), $required);
+            return $validator->keyNested($key, call_user_func_array($class, $rule_arguments['arguments']), $required);
         }
 
-        return $validator->key($key, Validator::$rule(), $required);
+        return $validator->keyNested($key, Validator::$rule(), $required);
     }
 
     /**
