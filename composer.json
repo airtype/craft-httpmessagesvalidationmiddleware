@@ -1,6 +1,9 @@
 {
-    "name": "airtype/httpmessagesvalidationmiddleware",
+    "name": "airtype/craft-httpmessagesvalidationmiddleware",
     "type": "craft-plugin",
+    "extra": {
+        "installer-name": "httpmessagesvalidationmiddleware"
+    },
     "authors": [
         {
             "name": "Wes Rice",
