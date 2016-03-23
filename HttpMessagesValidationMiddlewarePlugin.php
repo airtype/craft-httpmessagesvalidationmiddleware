@@ -2,8 +2,6 @@
 
 namespace Craft;
 
-Craft::import('plugins.httpmessagesvalidationmiddleware.vendor.autoload', true);
-
 class HttpMessagesValidationMiddlewarePlugin extends BasePlugin
 {
     /**
