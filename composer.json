@@ -17,6 +17,7 @@
     },
     "require": {
         "composer/installers": "~1.0",
-        "respect/validation": "^1.0"
+        "respect/validation": "^1.0",
+        "particle/validator": "^2.1"
     }
 }
