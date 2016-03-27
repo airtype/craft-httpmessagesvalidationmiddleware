@@ -1,9 +1,5 @@
 {
     "name": "airtype/craft-httpmessagesvalidationmiddleware",
-    "type": "craft-plugin",
-    "extra": {
-        "installer-name": "httpmessagesvalidationmiddleware"
-    },
     "authors": [
         {
             "name": "Wes Rice",
@@ -13,10 +9,10 @@
     "autoload": {
         "psr-4": {
             "HttpMessagesValidationMiddleware\\": "src/"
-        }
+        },
+        "files": ["config.php"]
     },
     "require": {
-        "composer/installers": "~1.0",
         "respect/validation": "^1.0",
         "particle/validator": "^2.1"
     }
