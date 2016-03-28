@@ -10,7 +10,7 @@
         "psr-4": {
             "HttpMessagesValidationMiddleware\\": "src/"
         },
-        "files": ["config.php"]
+        "files": ["functions.php", "config.php"]
     },
     "require": {
         "respect/validation": "^1.0",
